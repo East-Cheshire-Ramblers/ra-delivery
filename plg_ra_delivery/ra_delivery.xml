@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="console" method="upgrade">
+    <name>plg_ra_delivery</name>
+    <description>Ramblers console plugin to poll delivery activity</description>
+    <version>0.1.0</version>
+    <creationDate>1 Jun 2026</creationDate>
+    <author>Charlie Bigley</author>
+    <authorEmail>charlie@bigley.me.uk</authorEmail>
+    <copyright>2026 Charlie Bigley</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <namespace path="src">Ramblers\Plugin\Console\Ra_delivery</namespace>
+    <files>
+        <filename plugin="ra_delivery">ra_delivery.php</filename>
+        <folder>services</folder>
+        <folder>src</folder>
+    </files>
+</extension>

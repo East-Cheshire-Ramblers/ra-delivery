@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <fieldset name="phase1" label="Phase 1 Delivery Polling">
+        <field
+            name="polling_enabled"
+            type="radio"
+            label="Enable activity polling"
+            default="1">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </field>
+        <field
+            name="smtp2go_api_site_id"
+            type="number"
+            label="SMTP2GO API site id"
+            description="Record id in #__ra_api_sites used for SMTP2GO activity polling"
+            default="0"
+            min="0"
+        />
+        <field
+            name="lookback_minutes"
+            type="number"
+            label="Overlap lookback in minutes"
+            description="Minutes to subtract from the stored watermark to avoid missing late-arriving events"
+            default="10"
+            min="0"
+        />
+        <field
+            name="page_limit"
+            type="number"
+            label="Events per page"
+            description="Maximum events to request per activity search call"
+            default="250"
+            min="1"
+            max="1000"
+        />
+        <field
+            name="event_types"
+            type="checkboxes"
+            label="Monitored event types"
+            description="Select SMTP2GO activity events to ingest. Unsubscribe and resubscribe events are intentionally excluded."
+            default="soft-bounced,hard-bounced,rejected,spam">
+            <option value="processed">Processed</option>
+            <option value="soft-bounced">Soft bounced</option>
+            <option value="hard-bounced">Hard bounced</option>
+            <option value="rejected">Rejected</option>
+            <option value="spam">Spam</option>
+            <option value="delivered">Delivered</option>
+            <option value="opened">Opened</option>
+            <option value="clicked">Clicked</option>
+        </field>
+    </fieldset>
+    <fieldset
+        name="permissions"
+        label="JCONFIG_PERMISSIONS_LABEL"
+        description="JCONFIG_PERMISSIONS_DESC">
+        <field
+            name="rules"
+            type="rules"
+            label="JCONFIG_PERMISSIONS_LABEL"
+            validate="rules"
+            filter="rules"
+            component="com_ra_delivery"
+            section="component"
+        />
+    </fieldset>
+</config>
