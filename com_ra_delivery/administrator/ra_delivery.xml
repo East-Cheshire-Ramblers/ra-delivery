@@ -39,5 +39,9 @@
             <folder>src</folder>
             <folder>tmpl</folder>
         </files>
+        <languages folder="administrator/languages">
+			<language tag="en-GB">en-GB/com_ra_delivery.ini</language>
+			<language tag="en-GB">en-GB/com_ra_delivery.sys.ini</language>
+        </languages>
     </administration>
 </extension>
