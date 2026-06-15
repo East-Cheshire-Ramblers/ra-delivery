@@ -46,8 +46,6 @@
             <option value="a.subject DESC">COM_RA_DELIVERY_SUBJECT_DESC</option>
             <option value="a.email_id ASC">COM_RA_DELIVERY_EMAIL_ID_ASC</option>
             <option value="a.email_id DESC">COM_RA_DELIVERY_EMAIL_ID_DESC</option>
-            <option value="a.api_site_id ASC">COM_RA_DELIVERY_API_SITE_ID_ASC</option>
-            <option value="a.api_site_id DESC">COM_RA_DELIVERY_API_SITE_ID_DESC</option>
 
         </field>
 

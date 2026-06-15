@@ -4,7 +4,7 @@
         <field 
             name="note1" 
             type="note" 
-            label="You must set up a scheduled Task: php joomla.php ra_dlivery:pollactivity"
+            label="You must set up a scheduled Task: php joomla.php ra_delivery:pollactivity"
         />
         <field
             name="polling_enabled"
@@ -66,7 +66,7 @@
             max="1000"
         />
     </fieldset>
-    <fieldset name="phase1" label="Post processing"> 
+    <fieldset name="post_processing" label="Post processing"> 
          <field
             name="tidy_up_days"
             type="number"
@@ -75,6 +75,15 @@
             default="30"
             min="0"
         />   
+     <field name="notify_user"
+        maxlength="80"
+        filter="email"
+        type="email"
+        required="true"
+        label="Notify user"
+        description="Email address of User to be notified of exceptions"
+        hint="aaaa@bbbb.com"
+    /> 
     </fieldset>
     <fieldset
         name="permissions"

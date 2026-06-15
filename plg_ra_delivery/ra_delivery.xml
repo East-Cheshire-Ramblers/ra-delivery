@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="console" method="upgrade">
     <name>plg_ra_delivery</name>
-    <description>Ramblers console plugin to poll delivery activity. Configuration is held in com_ra_delivery component options.</description>
-    <version>1.0.0</version>
-    <creationDate>4 Jun 2026</creationDate>
+    <description>Ramblers console plugin to poll email delivery. Configuration is held in com_ra_delivery component options.</description>
+    <version>1.0.1</version>
+    <creationDate>15 Jun 2026</creationDate>
     <author>Charlie Bigley</author>
     <authorEmail>charlie@bigley.me.uk</authorEmail>
     <copyright>2026 Charlie Bigley</copyright>

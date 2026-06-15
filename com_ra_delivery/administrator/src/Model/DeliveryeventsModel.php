@@ -1,11 +1,12 @@
 <?php
 
 /**
- * @version    1.0.0
+ * @version    1.1.6
  * @package    com_ra_delivery
  * @author     Charlie Bigley <charlie@bigley.me.uk>
  * @copyright  2026 Charlie Bigley
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 15/06/26 CB date descending
  */
 
 namespace Ramblers\Component\Ra_delivery\Administrator\Model;
@@ -70,7 +71,7 @@ class DeliveryeventsModel extends ListModel {
      */
     protected function populateState($ordering = null, $direction = null) {
         // List state information.
-        parent::populateState('a.id', 'DESC');
+        parent::populateState('a.event_date_utc', 'DESC');
 
         $context = $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search');
         $this->setState('filter.search', $context);

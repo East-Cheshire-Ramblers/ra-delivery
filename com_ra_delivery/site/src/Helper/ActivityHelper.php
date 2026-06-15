@@ -1,10 +1,20 @@
 <?php
 
+/**
+ * @version     1.0.3
+ * @package     com_ra_members
+ * @copyright   Copyright (C) 2020. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @author      Charlie <webmaster@bigley.me.uk> - https://www.stokeandnewcastleramblers.org.uk
+ * 15/06/26 CB send email
+ */
+
 namespace Ramblers\Component\Ra_delivery\Site\Helper;
 
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Factory;
 use Ramblers\Component\Ra_delivery\Site\Service\Smtp2goActivityService;
 use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
@@ -19,7 +29,10 @@ class ActivityHelper {
     private const FAILED = 'failed';
 
     private $db;
+    private $email;
+    private $error_count = 0;
     private $messages = array();
+    private $notify_user = '';
     private $service;
     private $toolsHelper;
 
@@ -29,17 +42,42 @@ class ActivityHelper {
         $this->service = new Smtp2goActivityService();
     }
 
+    private function actionBounce($event) {
+        $email = $event["recipient"];
+        $details = HTMLHelper::_('date', $event["date"], 'D d/m/y H:i') . ', ';
+        $reason = $event["event"];
+        $details .= $reason . ', ';
+        $details .= $event['sender'] . ', ';
+        $details .= $email . ', ';
+        $sql = 'SELECT u.id, u.name, p.preferred_name FROM #__users u ';
+        $sql .= 'LEFT JOIN #__ra_profiles p ON u.id = p.id ';
+        $sql .= 'WHERE u.email=' . $this->db->quote($email);
+        $user = $this->toolsHelper->getItem($sql);
+        if ($user) {
+            $details .= ($user->preferred_name === '') ? $user->name : $user->preferred_name;
+            if (($reason == 'hard-bounced ') || ($reason == 'rejected')) {
+                $this->error_count++;
+                $sql = 'UPDATE #__users SET block=1 WHERE id=' . (int) $user->id;
+                $this->toolsHelper->executeCommand($sql);
+                $details .= ',User blocked';
+            }
+        } else {
+            $details .= 'No user found';
+        }
+        $this->email .= $details . '<br>';
+    }
+
     private function calculateStartDate($lookbackMinutes) {
         $watermark = $this->loadWatermark();
 
         if ($watermark === '') {
-            return gmdate('Y-m-d\TH:i:s\Z', strtotime('-1 day'));
+            return gmdate('Y-m-d\TH:i:s\Z', strtotime('-28 day'));
         }
 
         $timestamp = strtotime($watermark);
 
         if ($timestamp === false) {
-            return gmdate('Y-m-d\TH:i:s\Z', strtotime('-1 day'));
+            return gmdate('Y-m-d\TH:i:s\Z', strtotime('-28 day'));
         }
 
         return gmdate('Y-m-d\TH:i:s\Z', $timestamp - ($lookbackMinutes * 60));
@@ -132,6 +170,7 @@ class ActivityHelper {
         $pageLimit = min(1000, max(1, (int) $params->get('page_limit', 250)));
         $subdomainFilter = $this->normaliseSubdomainFilter($params->get('subdomain'));
         $tidyUpDays = max(0, (int) $params->get('tidy_up_days', 30));
+        $this->notify_user = trim((string) $params->get('notify_user', ''));
 
         $startDate = $this->calculateStartDate($lookbackMinutes);
         $endDate = gmdate('Y-m-d\TH:i:s\Z');
@@ -140,7 +179,11 @@ class ActivityHelper {
 
         $this->messages[] = 'Polling SMTP2GO activity from ' . $startDate . ' to ' . $endDate;
         $this->logMessage('Starting activity poll from ' . $startDate . ' to ' . $endDate . ' for api site ' . $apiSiteId, (string) $apiSiteId);
-
+        if ($this->notify_user == '') {
+            $this->messages[] = 'No notification email address configured; no email will be sent';
+        } else {
+            $this->messages[] = 'Notification email will be sent to ' . $this->notify_user;
+        }
         if ($subdomainFilter !== '') {
             $this->messages[] = 'Applying sender subdomain filter: ' . $subdomainFilter;
         }
@@ -170,7 +213,9 @@ class ActivityHelper {
                     $stats['filtered']++;
                     continue;
                 }
-
+                if ($this->notify_user !== '') {
+                    $this->actionBounce($event);
+                }
                 $storeResult = $this->storeEvent($apiSiteId, $event);
 
                 if ($storeResult === self::INSERTED) {
@@ -190,8 +235,11 @@ class ActivityHelper {
             $this->logMessage('Polling completed with ' . $stats['failed'] . ' storage failures; watermark not advanced', (string) $apiSiteId);
             return false;
         }
-
-        $this->storeWatermark($endDate);
+        if ($this->notify_user !== '') {
+            $this->messages[] = 'Email sent to ' . $this->notify_user;
+            $this->sendEmail();
+        }
+       $this->storeWatermark($endDate);
         if ($tidyUpDays > 0) {
             $stats['deleted'] = $this->tidyUpOldEvents($tidyUpDays);
         }
@@ -199,6 +247,9 @@ class ActivityHelper {
         $this->messages[] = 'Polling complete: ' . $stats['inserted'] . ' inserted, ' . $stats['duplicates'] . ' duplicates'
                 . ($stats['filtered'] > 0 ? ', ' . $stats['filtered'] . ' filtered out' : '')
                 . ($stats['deleted'] > 0 ? ', ' . $stats['deleted'] . ' tidied up' : '');
+        if ($this->error_count > 0) {
+            $this->messages[] = $this->error_count . ' users were blocked due to hard bounces or rejections.';
+        }
         $this->messages[] = 'Watermark updated to ' . $endDate;
         $this->logMessage(
                 'Polling complete: ' . $stats['inserted'] . ' inserted, ' . $stats['duplicates'] . ' duplicates'
@@ -209,6 +260,19 @@ class ActivityHelper {
         );
 
         return $stats;
+    }
+
+    private function sendEmail() {
+        $to = $this->notify_user;
+        $reply_to = 'hyperbigley@gmail.com';
+        $subject = 'SMTP2GO Activity Poll Report';
+        $body = "The following activity events were detected during the latest poll:<br><br>";
+        $body .= 'Date,Reason,Sender,Recipient,User<br>';
+        $body .= $this->email;
+        if ($this->error_count > 0) {
+            $body .= "<br><br>" . $this->error_count . " users were blocked due to hard bounces or rejections.";
+        }
+        $this->toolsHelper->sendEmail($to, $reply_to, $subject, $body);
     }
 
     private function storeEvent($apiSiteId, array $event) {
@@ -282,6 +346,9 @@ class ActivityHelper {
     }
 
     public function testApiSite($apiSiteId) {
+        $this->pollConfiguredEvents();
+        return;
+
         $apiSiteId = (int) $apiSiteId;
         $params = ComponentHelper::getParams('com_ra_delivery');
         $eventTypes = $this->normaliseConfiguredEventTypes($params->get('event_types'));

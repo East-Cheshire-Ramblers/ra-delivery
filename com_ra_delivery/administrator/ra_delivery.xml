@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="4.0" method="upgrade">
     <name>com_ra_delivery</name>
-    <creationDate>9 Jun 2026</creationDate>
+    <creationDate>15 Jun 2026</creationDate>
     <copyright>2026 Charlie Bigley</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <author>Charlie Bigley</author>
     <authorEmail>charlie@bigley.me.uk</authorEmail>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
     <description>RA Delivery</description>
     <namespace path="src">Ramblers\Component\Ra_delivery</namespace>
     <scriptfile>script.php</scriptfile>

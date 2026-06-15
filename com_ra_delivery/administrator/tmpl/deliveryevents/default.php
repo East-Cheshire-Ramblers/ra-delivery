@@ -32,23 +32,20 @@ $listDirn = $this->state->get('list.direction');
     <div class="row">
         <div class="col-md-12">
             <div id="j-main-container" class="j-main-container">
-<?php echo LayoutHelper::render('joomla.searchtools.default', array('view' => $this)); ?>
+                <?php echo LayoutHelper::render('joomla.searchtools.default', array('view' => $this)); ?>
 
                 <div class="clearfix"></div>
                 <table class="table table-striped" id="deliveryeventList">
                     <thead>
                         <tr>
                             <th class='left'>
-<?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_PROVIDER_NAME', 'a.provider_name', $listDirn, $listOrder); ?>
+                                <?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_PROVIDER_NAME', 'a.provider_name', $listDirn, $listOrder); ?>
                             </th>
                             <th class='left'>
                                 <?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_EVENT_DATE_UTC', 'a.event_date_utc', $listDirn, $listOrder); ?>
                             </th>
                             <th class='left'>
                                 <?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_EVENT_TYPE', 'a.event_type', $listDirn, $listOrder); ?>
-                            </th>
-                            <th class='left'>
-                                <?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_API_SITE_ID', 'a.api_site_id', $listDirn, $listOrder); ?>
                             </th>
                             <th class='left'>
                                 <?php echo HTMLHelper::_('searchtools.sort', 'COM_RA_DELIVERY_DELIVERYEVENTS_RECIPIENT', 'a.recipient', $listDirn, $listOrder); ?>
@@ -70,27 +67,24 @@ $listDirn = $this->state->get('list.direction');
                     <tfoot>
                         <tr>
                             <td colspan="<?php echo isset($this->items[0]) ? count(get_object_vars($this->items[0])) : 10; ?>">
-<?php echo $this->pagination->getListFooter(); ?>
+                                <?php echo $this->pagination->getListFooter(); ?>
                             </td>
                         </tr>
                     </tfoot>
                     <tbody>
-<?php foreach ($this->items as $i => $item) :
-    ?>
+                        <?php foreach ($this->items as $i => $item) :
+                            ?>
                             <tr class="row<?php echo $i % 2; ?>" data-draggable-group='1' data-transition>
                                 <td>
                                     <a href="<?php echo Route::_('index.php?option=com_ra_delivery&view=deliveryevent&id=' . (int) $item->id); ?>">
-    <?php echo $this->escape($item->provider_name); ?>
+                                        <?php echo $this->escape($item->provider_name); ?>
                                     </a>
                                 </td>
                                 <td>
-    <?php echo HTMLHelper::_('date', $item->event_date_utc, 'd M y H:i'); ?>
+                                    <?php echo HTMLHelper::_('date', $item->event_date_utc, 'd M y H:i'); ?>
                                 </td>
                                 <td>
                                     <?php echo $this->escape($item->event_type); ?>
-                                </td>
-                                <td>
-                                    <?php echo $item->api_site_id; ?>
                                 </td>
                                 <td>
                                     <?php echo $this->escape($item->recipient); ?>
@@ -108,13 +102,13 @@ $listDirn = $this->state->get('list.direction');
                                     <?php echo $item->id; ?>
                                 </td>
                             </tr>
-                                <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
 
                 <input type="hidden" name="task" value=""/>
                 <input type="hidden" name="list[fullorder]" value="<?php echo $listOrder; ?> <?php echo $listDirn; ?>"/>
-<?php echo HTMLHelper::_('form.token'); ?>
+                <?php echo HTMLHelper::_('form.token'); ?>
             </div>
         </div>
     </div>

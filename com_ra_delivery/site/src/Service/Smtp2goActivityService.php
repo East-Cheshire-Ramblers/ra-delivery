@@ -22,11 +22,16 @@ class Smtp2goActivityService {
         return $this->lastError;
     }
 
+    /*
+     * Returns the decoded json data, or false
+     * Invoked on-line for testing, or from the batch process
+     */
+
     public function searchActivity($apiSiteId, $startDate, $endDate, array $eventTypes, $limit, $continueToken = '') {
         $site = $this->loadApiSite((int) $apiSiteId);
 
         if ($site === null) {
-            $this->lastError = 'API site not found';
+            $this->lastError = 'API site ' . $apiSiteId . ' not found';
             return false;
         }
 
