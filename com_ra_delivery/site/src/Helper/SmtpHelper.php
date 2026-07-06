@@ -1,12 +1,15 @@
 <?php
 
 /**
- * @version     1.0.3
+ * @version     1.0.6
  * @package     com_ra_members
  * @copyright   Copyright (C) 2020. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  * @author      Charlie <webmaster@bigley.me.uk> - https://www.stokeandnewcastleramblers.org.uk
  * 15/06/26 CB send email
+ * 23/06/26 CB Don't send blank report
+ * 02/07/26 CB email report as table
+ * 06/07/26 CB Renamed; apply subdomain filter on the API call, not after the fact
  */
 
 namespace Ramblers\Component\Ra_delivery\Site\Helper;
@@ -19,7 +22,7 @@ use Joomla\CMS\Factory;
 use Ramblers\Component\Ra_delivery\Site\Service\Smtp2goActivityService;
 use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
 
-class ActivityHelper {
+class SmtpHelper {
 
     private const WATERMARK_RECORD_TYPE = 2;
     private const LOG_SUB_SYSTEM = 'RA Delivery';
@@ -29,6 +32,7 @@ class ActivityHelper {
     private const FAILED = 'failed';
 
     private $db;
+    private $count = 0;
     private $email;
     private $error_count = 0;
     private $messages = array();
@@ -44,11 +48,13 @@ class ActivityHelper {
 
     private function actionBounce($event) {
         $email = $event["recipient"];
-        $details = HTMLHelper::_('date', $event["date"], 'D d/m/y H:i') . ', ';
+        $details = '<tr>';
+        $details = '<td>' . HTMLHelper::_('date', $event["date"], 'D d/m/y H:i') . '</td>';
         $reason = $event["event"];
-        $details .= $reason . ', ';
-        $details .= $event['sender'] . ', ';
-        $details .= $email . ', ';
+        $details .= '<td>' . $reason . '</td>';
+        $details .= '<td>' . $event['sender'] . '</td>';
+        $details .= '<td>' . $email . '</td>';
+        $details .= '<td>';
         $sql = 'SELECT u.id, u.name, p.preferred_name FROM #__users u ';
         $sql .= 'LEFT JOIN #__ra_profiles p ON u.id = p.id ';
         $sql .= 'WHERE u.email=' . $this->db->quote($email);
@@ -59,12 +65,14 @@ class ActivityHelper {
                 $this->error_count++;
                 $sql = 'UPDATE #__users SET block=1 WHERE id=' . (int) $user->id;
                 $this->toolsHelper->executeCommand($sql);
-                $details .= ',User blocked';
+                $details .= 'User blocked';
             }
         } else {
             $details .= 'No user found';
         }
-        $this->email .= $details . '<br>';
+        $details .= '</td>';
+        $details = '</tr>';
+        $this->email .= $details;
     }
 
     private function calculateStartDate($lookbackMinutes) {
@@ -176,6 +184,7 @@ class ActivityHelper {
         $endDate = gmdate('Y-m-d\TH:i:s\Z');
         $continueToken = '';
         $stats = array('inserted' => 0, 'duplicates' => 0, 'failed' => 0, 'filtered' => 0, 'deleted' => 0, 'pages' => 0, 'events' => 0);
+        $this->email = '';
 
         $this->messages[] = 'Polling SMTP2GO activity from ' . $startDate . ' to ' . $endDate;
         $this->logMessage('Starting activity poll from ' . $startDate . ' to ' . $endDate . ' for api site ' . $apiSiteId, (string) $apiSiteId);
@@ -189,7 +198,8 @@ class ActivityHelper {
         }
 
         do {
-            $result = $this->service->searchActivity($apiSiteId, $startDate, $endDate, $eventTypes, $pageLimit, $continueToken);
+            $subaccounts = ($subdomainFilter !== '') ? [$subdomainFilter] : [];
+            $result = $this->service->searchActivity($apiSiteId, $startDate, $endDate, $eventTypes, $pageLimit, $continueToken, $subaccounts);
 
             if ($result === false) {
                 $this->messages[] = 'Polling failed: ' . $this->service->getLastError();
@@ -207,12 +217,7 @@ class ActivityHelper {
                     . ($result['request_id'] !== '' ? ' (request ' . $result['request_id'] . ')' : ''),
                     (string) $apiSiteId
             );
-
             foreach ($events as $event) {
-                if (!$this->matchesSubdomainFilter($event, $subdomainFilter)) {
-                    $stats['filtered']++;
-                    continue;
-                }
                 if ($this->notify_user !== '') {
                     $this->actionBounce($event);
                 }
@@ -235,11 +240,11 @@ class ActivityHelper {
             $this->logMessage('Polling completed with ' . $stats['failed'] . ' storage failures; watermark not advanced', (string) $apiSiteId);
             return false;
         }
-        if ($this->notify_user !== '') {
+        if (($this->count > 0) AND ($this->notify_user !== '')) {
             $this->messages[] = 'Email sent to ' . $this->notify_user;
-            $this->sendEmail();
+            $this->sendReport();
         }
-       $this->storeWatermark($endDate);
+        $this->storeWatermark($endDate);
         if ($tidyUpDays > 0) {
             $stats['deleted'] = $this->tidyUpOldEvents($tidyUpDays);
         }
@@ -262,13 +267,68 @@ class ActivityHelper {
         return $stats;
     }
 
-    private function sendEmail() {
+    public function sendEmail($to, $reply_to, $subject, $message, $attachments = '', $bcc = '') {
+        $params = ComponentHelper::getParams('com_ra_delivery');
+        $apiSiteId = (int) $params->get('smtp2go_api_site_id', 0);
+
+        if ($apiSiteId <= 0) {
+            $this->messages[] = 'SMTP2GO API site id is not configured';
+            return false;
+        }
+
+        $payload = [
+            'sender' => $reply_to,
+            'to' => (array) $to,
+            'subject' => $subject,
+            'html_body' => $message,
+            'fastaccept' => true,
+        ];
+
+        if (!empty($bcc)) {
+            $payload['bcc'] = (array) $bcc;
+        }
+
+        if (!empty($attachments)) {
+            // The documentation suggests attachments are objects with filename and fileblob
+            // This part may need adjustment depending on the format of $attachments
+        }
+        
+        $custom_headers = [
+            [
+                'header' => 'Reply-To',
+                'value' => $reply_to
+            ]
+        ];
+
+        $payload['custom_headers'] = $custom_headers;
+
+        $result = $this->service->send($apiSiteId, $payload);
+
+        if ($result === false) {
+            $this->messages[] = 'Failed to send email: ' . $this->service->getLastError();
+            $this->logMessage('Failed to send email: ' . $this->service->getLastError(), (string) $apiSiteId);
+            return false;
+        }
+
+        $this->messages[] = 'Email sent successfully. Request ID: ' . ($result['request_id'] ?? 'N/A');
+        return true;
+    }
+
+    private function sendReport() {
         $to = $this->notify_user;
         $reply_to = 'hyperbigley@gmail.com';
         $subject = 'SMTP2GO Activity Poll Report';
-        $body = "The following activity events were detected during the latest poll:<br><br>";
-        $body .= 'Date,Reason,Sender,Recipient,User<br>';
+
+        $body = "The following activity events were detected during the latest poll<br>";
+        $body .= '<table>';
+        $body .= '<thead>';
+        $body .= '<th>Date</th><th>Reason</th><th>Sender</th><th>Recipient</th><th>User</th>';
+        $body .= '</thead>';
+        $body .= '<tbody>';
+
         $body .= $this->email;
+        $body .= '</tbody>';
+        $body .= '</table>';
         if ($this->error_count > 0) {
             $body .= "<br><br>" . $this->error_count . " users were blocked due to hard bounces or rejections.";
         }
@@ -276,6 +336,7 @@ class ActivityHelper {
     }
 
     private function storeEvent($apiSiteId, array $event) {
+        $this->count++;
         $query = $this->db->getQuery(true)
                 ->insert($this->db->quoteName('#__ra_delivery_events'))
                 ->columns(array(
@@ -316,6 +377,7 @@ class ActivityHelper {
         try {
             $this->db->setQuery($query);
             $this->db->execute();
+
             return self::INSERTED;
         } catch (\RuntimeException $exception) {
             if ((int) $exception->getCode() === 1062 || strpos($exception->getMessage(), 'Duplicate entry') !== false) {
@@ -365,24 +427,20 @@ class ActivityHelper {
         $endDate = gmdate('Y-m-d\TH:i:s\Z');
         $this->messages[] = 'Testing SMTP2GO activity for site ' . $apiSiteId . ' from ' . $startDate . ' to ' . $endDate;
 
-        $result = $this->service->searchActivity($apiSiteId, $startDate, $endDate, $eventTypes, $pageLimit);
+        $subaccounts = ($subdomainFilter !== '') ? [$subdomainFilter] : [];
+        $result = $this->service->searchActivity($apiSiteId, $startDate, $endDate, $eventTypes, $pageLimit, '', $subaccounts);
 
         if ($result === false) {
             $this->messages[] = 'Test failed: ' . $this->service->getLastError();
             return false;
         }
 
-        $events = $this->filterEventsBySubdomain($result['events'], $subdomainFilter);
-        $filteredOut = count($result['events']) - count($events);
+        $events = $result['events'];
         $this->messages[] = 'Request ' . ($result['request_id'] !== '' ? $result['request_id'] : 'n/a')
                 . ' returned ' . count($events) . ' events';
 
         if ($subdomainFilter !== '') {
             $this->messages[] = 'Applied sender subdomain filter: ' . $subdomainFilter;
-        }
-
-        if ($filteredOut > 0) {
-            $this->messages[] = $filteredOut . ' events excluded by sender subdomain filter';
         }
 
         return array(

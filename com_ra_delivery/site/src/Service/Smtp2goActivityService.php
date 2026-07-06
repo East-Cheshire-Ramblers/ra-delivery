@@ -27,7 +27,7 @@ class Smtp2goActivityService {
      * Invoked on-line for testing, or from the batch process
      */
 
-    public function searchActivity($apiSiteId, $startDate, $endDate, array $eventTypes, $limit, $continueToken = '') {
+    public function searchActivity($apiSiteId, $startDate, $endDate, array $eventTypes, $limit, $continueToken = '', $subaccounts = []) {
         $site = $this->loadApiSite((int) $apiSiteId);
 
         if ($site === null) {
@@ -45,6 +45,9 @@ class Smtp2goActivityService {
 
         if ($continueToken !== '') {
             $payload['continue_token'] = $continueToken;
+        }
+        if (!empty($subaccounts)) {
+            $payload['subaccounts'] = $subaccounts;
         }
 
         $headers = array(
@@ -133,6 +136,30 @@ class Smtp2goActivityService {
         }
 
         return $decoded;
+    }
+
+    public function send($apiSiteId, $payload) {
+        $site = $this->loadApiSite((int) $apiSiteId);
+
+        if ($site === null) {
+            $this->lastError = 'API site ' . $apiSiteId . ' not found';
+            return false;
+        }
+
+        $headers = array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'X-Smtp2go-Api-Key: ' . trim((string) $site->token),
+        );
+
+        $endpoint = rtrim((string) $site->url, '/') . '/v3/email/send';
+        $response = $this->postJson($endpoint, $headers, $payload);
+
+        if ($response === false) {
+            return false;
+        }
+
+        return $response;
     }
 
 }

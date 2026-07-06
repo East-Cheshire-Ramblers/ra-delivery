@@ -1,11 +1,12 @@
 <?php
 
 /**
- * @version    1.0.0
+ * @version    1.0.2
  * @package    plg_ra_delivery
  * @author     Charlie Bigley <charlie@bigley.me.uk>
  * @copyright  2026 Charlie Bigley
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 06/07/26 CB rename ActivityHelper to SmtpHelper
  */
 
 namespace Ramblers\Plugin\Console\Ra_delivery\Command;
@@ -13,7 +14,7 @@ namespace Ramblers\Plugin\Console\Ra_delivery\Command;
 defined('JPATH_PLATFORM') or die;
 
 use Joomla\Console\Command\AbstractCommand;
-use Ramblers\Component\Ra_delivery\Site\Helper\ActivityHelper;
+use Ramblers\Component\Ra_delivery\Site\Helper\SmtpHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -26,7 +27,7 @@ class PollactivityCommand extends AbstractCommand {
 
     public function __construct() {
         parent::__construct();
-        $this->helper = new ActivityHelper();
+        $this->helper = new SmtpHelper();
     }
 
     protected function configure(): void {
