@@ -2,7 +2,12 @@
 
 Standalone delivery-integration workspace.
 
-This project is intended to hold a provider-neutral delivery component and supporting console plug-in.
+This is a simple package to monitor and report on emails that are sent but could not be delivered. There are two parts:
+  1. A batch plug-in that interrogates an SMTP server and logs delivery exceptions to a database table.
+  2. An on-line component that allows viewing of the database records, and allows configuration of the plug-in.
+
+The initial version of the plugin is specific to the API provided by SMTP2GO, but it would be straightforward to customise or clone the interface for a different provider.
+
 
 Current scope:
 
