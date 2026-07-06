@@ -146,6 +146,9 @@ class Smtp2goActivityService {
             return false;
         }
 
+        $app = Factory::getApplication();
+        $payload['sender'] = $app->get('mailfrom');
+
         $headers = array(
             'Accept: application/json',
             'Content-Type: application/json',
