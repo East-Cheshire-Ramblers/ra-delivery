@@ -2,13 +2,15 @@
 <extension type="package" method="upgrade">
     <name>pkg_ra_delivery</name>
     <packagename>ra_delivery</packagename>
-    <author>Charlie Bigley</author>
+    <author>Ramblers Tools</author>
     <creationDate>2026</creationDate>
-    <copyright>2026 Charlie Bigley</copyright>
-    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
-    <authorEmail>charlie@bigley.me.uk</authorEmail>
+    <copyright>2026 Ramblers Tools</copyright>
+    <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+    <authorEmail>support@ramblers.tools</authorEmail>
+    <authorUrl>https://ramblers.tools</authorUrl>
     <version>1.0.8</version>
     <description>Installs the RA Delivery component and console plugin for Ramblers groups</description>
+    <changelogurl>https://raw.githubusercontent.com/Ramblers-Tools/ra-delivery/main/changelog.xml</changelogurl>
     <files folder="packages">
         <file type="component" id="com_ra_delivery">com_ra_delivery.zip</file>
         <file type="plugin" id="plg_ra_delivery" group="console">plg_ra_delivery.zip</file>

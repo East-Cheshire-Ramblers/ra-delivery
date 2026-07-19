@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelogs>
+    <changelog>
+        <element>pkg_ra_delivery</element>
+        <type>package</type>
+        <version>1.0.8</version>
+        <note>
+            <item><![CDATA[Standardised author, licence and version metadata to match ra_tools]]></item>
+            <item><![CDATA[Fixed component manifest missing from package root, causing install failures]]></item>
+            <item><![CDATA[Registered RA Delivery in the Components admin menu]]></item>
+        </note>
+    </changelog>
+</changelogs>

@@ -4,10 +4,11 @@
     <description>Ramblers console plugin to poll email delivery. Configuration is held in com_ra_delivery component options.</description>
     <version>1.0.2</version>
     <creationDate>6 Jul 2026</creationDate>
-    <author>Charlie Bigley</author>
-    <authorEmail>charlie@bigley.me.uk</authorEmail>
-    <copyright>2026 Charlie Bigley</copyright>
-    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <author>Ramblers Tools</author>
+    <authorEmail>support@ramblers.tools</authorEmail>
+    <authorUrl>https://ramblers.tools</authorUrl>
+    <copyright>2026 Ramblers Tools</copyright>
+    <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
     <namespace path="src">Ramblers\Plugin\Console\Ra_delivery</namespace>
     <files>
         <filename plugin="ra_delivery">ra_delivery.php</filename>
