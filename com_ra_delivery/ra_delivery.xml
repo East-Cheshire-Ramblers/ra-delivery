@@ -2,12 +2,14 @@
 <extension type="component" version="4.0" method="upgrade">
     <name>com_ra_delivery</name>
     <creationDate>23 Jun 2026</creationDate>
-    <copyright>2026 Charlie Bigley</copyright>
-    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
-    <author>Charlie Bigley</author>
-    <authorEmail>charlie@bigley.me.uk</authorEmail>
+    <copyright>2026 Ramblers Tools</copyright>
+    <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+    <author>Ramblers Tools</author>
+    <authorEmail>support@ramblers.tools</authorEmail>
+    <authorUrl>https://ramblers.tools</authorUrl>
     <version>1.0.5</version>
     <description>RA Delivery</description>
+    <changelogurl>https://raw.githubusercontent.com/Ramblers-Tools/ra-delivery/main/changelog.xml</changelogurl>
     <namespace path="src">Ramblers\Component\Ra_delivery</namespace>
     <scriptfile>script.php</scriptfile>
     <install>
