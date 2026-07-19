@@ -29,6 +29,7 @@
         <folder>src</folder>
     </files>
     <administration>
+        <menu link="option=com_ra_delivery&amp;view=deliveryevents">RA Delivery</menu>
         <files folder="administrator">
             <filename>access.xml</filename>
             <filename>config.xml</filename>
