@@ -8,7 +8,7 @@
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
     <authorEmail>support@ramblers.tools</authorEmail>
     <authorUrl>https://ramblers.tools</authorUrl>
-    <version>1.0.9-dev</version>
+    <version>1.0.10-dev</version>
     <description>Installs the RA Delivery component and console plugin for Ramblers groups</description>
     <changelogurl>https://raw.githubusercontent.com/Ramblers-Tools/ra-delivery/main/changelog.xml</changelogurl>
     <files folder="packages">
