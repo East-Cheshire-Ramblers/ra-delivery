@@ -131,7 +131,8 @@ class Smtp2goActivityService {
             }
 
             $this->lastError = 'HTTP ' . $httpCode . ': ' . $error
-                    . ($responseSummary !== '' ? ' | ' . $responseSummary : '');
+                    . ($responseSummary !== '' ? ' | ' . $responseSummary : '')
+                    . ' | sent payload: ' . substr($body, 0, 1000);
             return false;
         }
 
