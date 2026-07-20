@@ -85,6 +85,13 @@ class Smtp2goActivityService {
     }
 
     private function postJson($url, array $headers, array $payload) {
+        $body = json_encode($payload, JSON_INVALID_UTF8_SUBSTITUTE);
+
+        if ($body === false) {
+            $this->lastError = 'Failed to encode request payload as JSON: ' . json_last_error_msg();
+            return false;
+        }
+
         $max = 5 * 60;
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -98,7 +105,7 @@ class Smtp2goActivityService {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2TLS,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_POSTFIELDS => $body,
             CURLOPT_HTTPHEADER => $headers,
         ));
 
