@@ -293,14 +293,14 @@ class SmtpHelper {
             // This part may need adjustment depending on the format of $attachments
         }
         
-        $custom_headers = [
-            [
-                'header' => 'Reply-To',
-                'value' => $reply_to
-            ]
-        ];
-
-        $payload['custom_headers'] = $custom_headers;
+        if (!empty($reply_to)) {
+            $payload['custom_headers'] = [
+                [
+                    'header' => 'Reply-To',
+                    'value' => $reply_to
+                ]
+            ];
+        }
 
         $result = $this->service->send($apiSiteId, $payload);
 
